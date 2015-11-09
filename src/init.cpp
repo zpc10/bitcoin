@@ -1400,6 +1400,12 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         LogPrintf("Wallet disabled!\n");
     } else {
 
+        //************************************/
+        // Only used for testing! Don't merge!
+        MIN_CHANGE = GetArg("-minchange", CENT);
+        std::cout << "MIN_CHANGE=" << MIN_CHANGE << std::endl;
+        //************************************/
+
         // needed to restore wallet transaction meta data after -zapwallettxes
         std::vector<CWalletTx> vWtx;
 

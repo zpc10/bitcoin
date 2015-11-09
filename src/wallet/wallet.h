@@ -46,7 +46,7 @@ static const CAmount DEFAULT_TRANSACTION_MINFEE = 1000;
 //! -maxtxfee default
 static const CAmount DEFAULT_TRANSACTION_MAXFEE = 0.1 * COIN;
 //! minimum change amount
-static const CAmount MIN_CHANGE = CENT;
+extern CAmount MIN_CHANGE;
 //! Default for -spendzeroconfchange
 static const bool DEFAULT_SPEND_ZEROCONF_CHANGE = true;
 //! Default for -sendfreetransactions

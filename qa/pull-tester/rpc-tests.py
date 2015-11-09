@@ -73,6 +73,7 @@ if EXEEXT == ".exe" and "-win" not in opts:
 #Tests
 testScripts = [
     'wallet.py',
+    'wallet_bench_change.py',
     'listtransactions.py',
     'receivedby.py',
     'mempool_resurrect_test.py',
