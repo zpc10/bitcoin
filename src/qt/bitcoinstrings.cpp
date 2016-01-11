@@ -100,9 +100,9 @@ QT_TRANSLATE_NOOP("bitcoin-classic", ""
 "Set maximum size of high-priority/low-fee transactions in bytes (default: %d)"),
 QT_TRANSLATE_NOOP("bitcoin-classic", ""
 "Set the number of script verification threads (%u to %d, 0 = auto, <0 = "
-"leave that many classics free, default: %d)"),
+"leave that many cores free, default: %d)"),
 QT_TRANSLATE_NOOP("bitcoin-classic", ""
-"Set the number of threads for coin generation if enabled (-1 = all classics, "
+"Set the number of threads for coin generation if enabled (-1 = all cores, "
 "default: %d)"),
 QT_TRANSLATE_NOOP("bitcoin-classic", ""
 "The transaction amount is too small to send after the fee has been deducted"),
