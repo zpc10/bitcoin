@@ -59,10 +59,22 @@ class JSONRPCException(Exception):
         self.error = rpc_error
 
 
-def EncodeDecimal(o):
-    if isinstance(o, decimal.Decimal):
-        return str(o)
-    raise TypeError(repr(o) + " is not JSON serializable")
+class DecimalEncoder(float):
+    def __init__(self, o):
+        self.o = o
+    def __repr__(self):
+        return str(self.o)
+
+class JSONEncoderWithDecimalCls(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return DecimalEncoder(o)
+        return json.JSONEncoder.default(self, o)
+
+JSONEncoderWithDecimal = JSONEncoderWithDecimalCls()
+
+def jsondumps(o):
+    return ''.join(JSONEncoderWithDecimal.iterencode(o))
 
 class AuthServiceProxy(object):
     __id_count = 0
@@ -129,11 +141,11 @@ class AuthServiceProxy(object):
         AuthServiceProxy.__id_count += 1
 
         log.debug("-%s-> %s %s"%(AuthServiceProxy.__id_count, self._service_name,
-                                 json.dumps(args, default=EncodeDecimal)))
-        postdata = json.dumps({'version': '1.1',
+                                 jsondumps(args)))
+        postdata = jsondumps({'version': '1.1',
                                'method': self._service_name,
                                'params': args,
-                               'id': AuthServiceProxy.__id_count}, default=EncodeDecimal)
+                               'id': AuthServiceProxy.__id_count})
         response = self._request('POST', self.__url.path, postdata)
         if response['error'] is not None:
             raise JSONRPCException(response['error'])
@@ -144,7 +156,7 @@ class AuthServiceProxy(object):
             return response['result']
 
     def _batch(self, rpc_call_list):
-        postdata = json.dumps(list(rpc_call_list), default=EncodeDecimal)
+        postdata = jsondumps(list(rpc_call_list))
         log.debug("--> "+postdata)
         return self._request('POST', self.__url.path, postdata)
 
@@ -157,7 +169,7 @@ class AuthServiceProxy(object):
         responsedata = http_response.read().decode('utf8')
         response = json.loads(responsedata, parse_float=decimal.Decimal)
         if "error" in response and response["error"] is None:
-            log.debug("<-%s- %s"%(response["id"], json.dumps(response["result"], default=EncodeDecimal)))
+            log.debug("<-%s- %s"%(response["id"], jsondumps(response["result"])))
         else:
             log.debug("<-- "+responsedata)
         return response
