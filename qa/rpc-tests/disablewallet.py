@@ -22,6 +22,7 @@ class DisableWalletTest (BitcoinTestFramework):
         self.sync_all()
 
     def run_test (self):
+        print self.nodes[0].gettxoutsetinfo()
         # Check regression: https://github.com/bitcoin/bitcoin/issues/6963#issuecomment-154548880
         x = self.nodes[0].validateaddress('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')
         assert(x['isvalid'] == False)

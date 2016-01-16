@@ -3,7 +3,6 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import *
 
@@ -265,13 +264,10 @@ class WalletTest (BitcoinTestFramework):
             '-salvagewallet',
         ]
         for m in maintenance:
+            print "check " + m
             stop_nodes(self.nodes)
             wait_bitcoinds()
             self.nodes = start_nodes(3, self.options.tmpdir, [[m]] * 3)
-            connect_nodes_bi(self.nodes,0,1)
-            connect_nodes_bi(self.nodes,1,2)
-            connect_nodes_bi(self.nodes,0,2)
-            self.sync_all()
             assert_equal(balance_nodes, [self.nodes[i].getbalance() for i in range(3)])
 
 
