@@ -5,6 +5,8 @@
 #   command. See: https://github.com/travis-ci/casher/issues/6
 
 os: linux
+sudo: required
+group: legacy
 language: cpp
 compiler: gcc
 env:
@@ -16,7 +18,7 @@ env:
     - CCACHE_TEMPDIR=/tmp/.ccache-temp
     - CCACHE_COMPRESS=1
     - BASE_OUTDIR=$TRAVIS_BUILD_DIR/out
-    - SDK_URL=https://bitcoincore.org/depends-sources/sdks
+    - SDK_URL=https://github.com/keo/MacOSX-SDK/releases/download/v0.0
     - PYTHON_DEBUG=1
     - WINEDEBUG=fixme-all
 cache:
