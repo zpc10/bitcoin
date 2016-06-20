@@ -177,7 +177,7 @@ def main():
     parser.add_argument('--coverage', action='store_true', help='generate a basic coverage report for the RPC interface')
     parser.add_argument('--exclude', '-x', help='specify a comma-separated-list of scripts to exclude.')
     parser.add_argument('--extended', action='store_true', help='run the extended test suite in addition to the basic tests')
-    parser.add_argument('--force', '-f', action='store_true', help='run tests even on platforms where they are disabled by default (e.g. windows).')
+    parser.add_argument('--force', '-f', action='store_true', help='run tests even on platforms where they are disabled by default.')
     parser.add_argument('--help', '-h', '-?', action='store_true', help='print help text and exit')
     parser.add_argument('--jobs', '-j', type=int, default=4, help='how many test scripts to run in parallel. Default=4.')
     parser.add_argument('--keepcache', '-k', action='store_true', help='the default behavior is to flush the cache directory on startup. --keepcache retains the cache from the previous testrun.')
@@ -209,12 +209,6 @@ def main():
     enable_wallet = config["components"].getboolean("ENABLE_WALLET")
     enable_utils = config["components"].getboolean("ENABLE_UTILS")
     enable_bitcoind = config["components"].getboolean("ENABLE_BITCOIND")
-
-    if config["environment"]["EXEEXT"] == ".exe" and not args.force:
-        # https://github.com/bitcoin/bitcoin/commit/d52802551752140cf41f0d9a225a43e84404d3e9
-        # https://github.com/bitcoin/bitcoin/pull/5677#issuecomment-136646964
-        print("Tests currently disabled on Windows by default. Use --force option to enable")
-        sys.exit(0)
 
     if not (enable_wallet and enable_utils and enable_bitcoind):
         print("No functional tests to run. Wallet, utils, and bitcoind must all be enabled")
