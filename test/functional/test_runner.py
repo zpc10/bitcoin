@@ -210,6 +210,11 @@ def main():
     enable_utils = config["components"].getboolean("ENABLE_UTILS")
     enable_bitcoind = config["components"].getboolean("ENABLE_BITCOIND")
 
+    if config["environment"]["EXEEXT"] == ".exe":
+        # Don't run tests in parallel on windows by default
+        # to avoid intermittent failures
+        args.jobs = 1  # Overwrite for now
+
     if not (enable_wallet and enable_utils and enable_bitcoind):
         print("No functional tests to run. Wallet, utils, and bitcoind must all be enabled")
         print("Rerun `configure` with -enable-wallet, -with-utils and -with-daemon and rerun make")
