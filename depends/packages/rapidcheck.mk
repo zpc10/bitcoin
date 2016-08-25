@@ -1,19 +1,11 @@
 package=rapidcheck
-
-$(package)_version=1.0
-
-$(package)_download_path=https://github.com/Christewart/rapidcheck/releases/download/1.0
-
+$(package)_version=f5d3afa
+$(package)_download_path=https://bitcoin-10596.firebaseapp.com/depends
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
-
-$(package)_sha256_hash=c228dc21ec24618bfb6afa31d622d1f4ea71168f04ee499e1ffcfc63cd5833f4
-
-define $(package)_preprocess_cmds
-  mkdir build
-endef
+$(package)_sha256_hash=78cdb8d0185b602e32e66f4e5d1a6ceec1f801dd9641b8a9456c386b1eaaf0e5
 
 define $(package)_config_cmds
-  cmake -DCMAKE_INSTALL_PREFIX:PATH=$(build_prefix)/bin ..
+  cmake -DCMAKE_INSTALL_PREFIX=$(build_prefix)
 endef
 
 define $(package)_build_cmds
