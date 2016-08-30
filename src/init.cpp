@@ -994,7 +994,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     if (!mapMultiArgs["-bip9params"].empty()) {
         // Allow overriding BIP9 parameters for testing
-        if (!Params().AllowsOverriddenSoftFork()) {
+        if (!chainparams.AllowsOverriddenSoftFork()) {
             return InitError("BIP9 parameters can't be overriden on this chain.");
         }
         CChainParams& mutableParams = Params(Params().NetworkIDString());
@@ -1030,10 +1030,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     if (!mapMultiArgs["-buriedsfparams"].empty()) {
         // Allow overriding ism parameters for testing
-        if (!Params().AllowsOverriddenSoftFork()) {
+        if (!chainparams.AllowsOverriddenSoftFork()) {
             return InitError("Buried soft fork parameters can't be overridden on this chain.");
         }
-        CChainParams& mutableParams = Params(Params().NetworkIDString());
+        CChainParams& mutableParams = Params(chainparams.NetworkIDString());
         std::map<string, Consensus::BuriedDeploymentPos> buriedDeployments;
         buriedDeployments.insert(std::make_pair("bip34", Consensus::BIP34_HEIGHT_ACTIVE));
         buriedDeployments.insert(std::make_pair("bip65", Consensus::BIP65_HEIGHT_ACTIVE));
