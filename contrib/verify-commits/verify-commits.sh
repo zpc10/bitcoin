@@ -27,11 +27,10 @@ IS_SIGNED () {
 	fi
 	local PARENTS
 	PARENTS=$(git show -s --format=format:%P $1)
-	for PARENT in $PARENTS; do
-		if IS_SIGNED $PARENT > /dev/null; then
-			return 0;
-		fi
-	done
+	PARENT=${PARENTS[0]}
+	if IS_SIGNED $PARENT; then
+		return 0;
+	fi
 	if ! "$HAVE_FAILED"; then
 		echo "No parent of $1 was signed with a trusted key!" > /dev/stderr
 		echo "Parents are:" > /dev/stderr
