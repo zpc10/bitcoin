@@ -2166,6 +2166,11 @@ void CConnman::SetNetworkActive(bool active)
 
 CConnman::CConnman(uint64_t nSeed0In, uint64_t nSeed1In) : nSeed0(nSeed0In), nSeed1(nSeed1In)
 {
+    Init();
+}
+
+void CConnman::Init()
+{
     fNetworkActive = true;
     setBannedIsDirty = false;
     fAddressesInitialized = false;
@@ -2180,6 +2185,10 @@ CConnman::CConnman(uint64_t nSeed0In, uint64_t nSeed1In) : nSeed0(nSeed0In), nSe
     nBestHeight = 0;
     clientInterface = NULL;
     flagInterruptMsgProc = false;
+    nTotalBytesRecv = 0;
+    nTotalBytesSent = 0;
+    nMaxOutboundTotalBytesSentInCycle = 0;
+    nMaxOutboundCycleStartTime = 0;
 }
 
 NodeId CConnman::GetNewNodeId()
@@ -2189,10 +2198,7 @@ NodeId CConnman::GetNewNodeId()
 
 bool CConnman::Start(CScheduler& scheduler, std::string& strNodeError, Options connOptions)
 {
-    nTotalBytesRecv = 0;
-    nTotalBytesSent = 0;
-    nMaxOutboundTotalBytesSentInCycle = 0;
-    nMaxOutboundCycleStartTime = 0;
+    Init();
 
     nRelevantServices = connOptions.nRelevantServices;
     nLocalServices = connOptions.nLocalServices;

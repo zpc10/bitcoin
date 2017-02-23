@@ -301,6 +301,7 @@ private:
     void AcceptConnection(const ListenSocket& hListenSocket);
     void ThreadSocketHandler();
     void ThreadDNSAddressSeed();
+    void Init();
 
     uint64_t CalculateKeyedNetGroup(const CAddress& ad) const;
 
