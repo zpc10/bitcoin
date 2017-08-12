@@ -248,8 +248,12 @@ def get_auth_cookie(datadir, n):
         with open(os.path.join(datadir, "regtest", ".cookie"), 'r') as f:
             userpass = f.read()
             split_userpass = userpass.split(':')
-            user = split_userpass[0]
-            password = split_userpass[1]
+            try:
+             user = split_userpass[0]
+             password = split_userpass[1]
+            except:
+             print(userpass, split_userpass)
+             raise
     if user is None or password is None:
         raise ValueError("No RPC credentials")
     return user, password
