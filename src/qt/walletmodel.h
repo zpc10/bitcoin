@@ -7,6 +7,7 @@
 
 #include "paymentrequestplus.h"
 #include "walletmodeltransaction.h"
+#include "script/ismine.h"
 
 #include "support/allocators/secure.h"
 
@@ -190,6 +191,7 @@ public:
     UnlockContext requestUnlock();
 
     bool getPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
+    isminetype IsMine(const CTxDestination& dest) const;
     bool havePrivKey(const CKeyID &address) const;
     bool getPrivKey(const CKeyID &address, CKey& vchPrivKeyOut) const;
     void getOutputs(const std::vector<COutPoint>& vOutpoints, std::vector<COutput>& vOutputs);

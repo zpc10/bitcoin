@@ -777,7 +777,7 @@ void SendCoinsDialog::coinControlChangeEdited(const QString& text)
         CoinControlDialog::coinControl->destChange = CNoDestination();
         ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
 
-        CBitcoinAddress addr = CBitcoinAddress(text.toStdString());
+        const CBitcoinAddress addr = CBitcoinAddress(text.toStdString());
 
         if (text.isEmpty()) // Nothing entered
         {
@@ -789,20 +789,17 @@ void SendCoinsDialog::coinControlChangeEdited(const QString& text)
         }
         else // Valid address
         {
-            CKeyID keyid;
-            addr.GetKeyID(keyid);
-            if (!model->havePrivKey(keyid)) // Unknown change address
-            {
+            const CTxDestination dest = addr.Get();
+            if (!bool(model->IsMine(dest) & ISMINE_SPENDABLE)) {
                 ui->labelCoinControlChangeLabel->setText(tr("Warning: Unknown change address"));
 
                 // confirmation dialog
                 QMessageBox::StandardButton btnRetVal = QMessageBox::question(this, tr("Confirm custom change address"), tr("The address you selected for change is not part of this wallet. Any or all funds in your wallet may be sent to this address. Are you sure?"),
                     QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
 
-                if(btnRetVal == QMessageBox::Yes)
-                    CoinControlDialog::coinControl->destChange = addr.Get();
-                else
-                {
+                if (btnRetVal == QMessageBox::Yes) {
+                    CoinControlDialog::coinControl->destChange = dest;
+                } else {
                     ui->lineEditCoinControlChange->setText("");
                     ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
                     ui->labelCoinControlChangeLabel->setText("");
@@ -819,7 +816,7 @@ void SendCoinsDialog::coinControlChangeEdited(const QString& text)
                 else
                     ui->labelCoinControlChangeLabel->setText(tr("(no label)"));
 
-                CoinControlDialog::coinControl->destChange = addr.Get();
+                CoinControlDialog::coinControl->destChange = dest;
             }
         }
     }
