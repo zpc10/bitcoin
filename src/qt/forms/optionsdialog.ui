@@ -696,7 +696,7 @@
        <item>
         <widget class="QPushButton" name="openBitcoinConfButton">
          <property name="toolTip">
-          <string>Open the %1 configuration file from the working directory.</string>
+          <string>Open the configuration file from the working directory.</string>
          </property>
          <property name="text">
           <string>Open Configuration File</string>
