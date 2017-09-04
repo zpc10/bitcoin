@@ -1,6 +1,7 @@
 sudo: required
 dist: trusty
 os: linux
+group: edge
 language: generic
 cache:
   directories:
