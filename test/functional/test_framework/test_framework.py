@@ -133,6 +133,8 @@ class BitcoinTestFramework():
         except KeyboardInterrupt as e:
             self.log.warning("Exiting after keyboard interrupt")
 
+        self.network_thread.close = True
+
         if success == TestStatus.FAILED and self.options.pdbonfailure:
             print("Testcase failed. Attaching python debugger. Enter ? for help")
             pdb.set_trace()

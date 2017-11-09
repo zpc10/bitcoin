@@ -150,7 +150,6 @@ class MaxUploadTest(BitcoinTestFramework):
         # Reconnect to self.nodes[0]
         self.nodes[0].add_p2p_connection(TestNode())
 
-        NetworkThread().start() # Start up network handling in another thread
         self.nodes[0].p2p.wait_for_verack()
 
         #retrieve 20 blocks which should be enough to break the 1MB limit

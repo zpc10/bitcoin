@@ -1827,7 +1827,8 @@ class NodeConn(asyncore.dispatcher):
 
 class NetworkThread(Thread):
     def run(self):
-        while mininode_socket_map:
+        self.close = False  # Keep alive
+        while mininode_socket_map and not self.close:
             # We check for whether to disconnect outside of the asyncore
             # loop to workaround the behavior of asyncore when using
             # select
