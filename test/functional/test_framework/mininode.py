@@ -60,6 +60,7 @@ logger = logging.getLogger("TestFramework.mininode")
 # ourselves (to workaround an issue with closing an asyncore socket when
 # using select)
 mininode_socket_map = dict()
+dispatcher_running = False
 
 # One lock for synchronizing all data access between the networking thread (see
 # NetworkThread below) and the thread running the test logic.  For simplicity,
@@ -1650,6 +1651,7 @@ class NodeConn(asyncore.dispatcher):
     }
 
     def __init__(self, dstaddr, dstport, rpc, callback, net="regtest", services=NODE_NETWORK|NODE_WITNESS, send_version=True):
+        assert not dispatcher_running
         asyncore.dispatcher.__init__(self, map=mininode_socket_map)
         self.dstaddr = dstaddr
         self.dstport = dstport
@@ -1827,6 +1829,9 @@ class NodeConn(asyncore.dispatcher):
 
 class NetworkThread(Thread):
     def run(self):
+        global dispatcher_running
+        assert not dispatcher_running, 'Must disconnect cleanly first'
+        dispatcher_running = True
         while mininode_socket_map:
             # We check for whether to disconnect outside of the asyncore
             # loop to workaround the behavior of asyncore when using
@@ -1837,6 +1842,7 @@ class NetworkThread(Thread):
                     disconnected.append(obj)
             [ obj.handle_close() for obj in disconnected ]
             asyncore.loop(0.1, use_poll=True, map=mininode_socket_map, count=1)
+        dispatcher_running = False
         logger.debug("Network thread closing")
 
 
