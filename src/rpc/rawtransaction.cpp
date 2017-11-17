@@ -992,6 +992,78 @@ UniValue sendrawtransaction(const JSONRPCRequest& request)
     return hashTx.GetHex();
 }
 
+UniValue testmempoolaccept(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2) {
+        throw std::runtime_error(
+            // clang-format off
+            "testmempoolaccept \"rawtx\" ( allowhighfees )\n"
+            "\nReturns if raw transaction (serialized, hex-encoded) would be accepted by mempool.\n"
+            "\nThis checks if the transaction violates our consesus or policy rules.\n"
+            "\nAlso see sendrawtransaction call.\n"
+            "\nArguments:\n"
+            "1. \"rawtx\"          (string, required) The hex string of the raw transaction)\n"
+            "2. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"txid\"           (string) The transaction hash in hex\n"
+            "  \"allowed\"        (boolean) If the mempool allows this tx to be inserted\n"
+            "  \"reject-reason\"  (string) rejection string (only present when 'allowed' is false)\n"
+            "}\n"
+            "\nExamples:\n"
+            "\nCreate a transaction\n"
+            + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\" : \\\"mytxid\\\",\\\"vout\\\":0}]\" \"{\\\"myaddress\\\":0.01}\"") +
+            "Sign the transaction, and get back the hex\n"
+            + HelpExampleCli("signrawtransaction", "\"myhex\"") +
+            "\nTest acceptance of the transaction (signed hex)\n"
+            + HelpExampleCli("testmempoolaccept", "\"signedhex\"") +
+            "\nAs a json rpc call\n"
+            + HelpExampleRpc("testmempoolaccept", "\"signedhex\"")
+            // clang-format on
+            );
+    }
+
+    ObserveSafeMode();
+
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
+
+    CMutableTransaction mtx;
+    if (!DecodeHexTx(mtx, request.params[0].get_str())) {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
+    }
+    CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
+    const uint256& tx_hash = tx->GetHash();
+
+    CAmount max_raw_tx_fee = ::maxTxFee;
+    if (!request.params[1].isNull() && request.params[1].get_bool()) {
+        max_raw_tx_fee = 0;
+    }
+
+    UniValue result(UniValue::VOBJ);
+    result.push_back(Pair("txid", tx_hash.GetHex()));
+
+    LOCK(cs_main);
+
+    CValidationState state;
+    bool missing_inputs;
+    bool test_accept_res;
+    bool res = AcceptToMemoryPool(mempool, state, std::move(tx), &missing_inputs,
+        nullptr /* plTxnReplaced */, false /* bypass_limits */, max_raw_tx_fee, &test_accept_res);
+    assert(!res);
+    result.push_back(Pair("allowed", test_accept_res));
+    if (!test_accept_res) {
+        if (state.IsInvalid()) {
+            result.push_back(Pair("reject-reason", strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason())));
+        } else if (missing_inputs) {
+            result.push_back(Pair("reject-reason", "Missing inputs"));
+        } else {
+            result.push_back(Pair("reject-reason", state.GetRejectReason()));
+        }
+    }
+
+    return result;
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         argNames
   //  --------------------- ------------------------  -----------------------  ----------
@@ -1002,6 +1074,7 @@ static const CRPCCommand commands[] =
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     {"hexstring","allowhighfees"} },
     { "rawtransactions",    "combinerawtransaction",  &combinerawtransaction,  {"txs"} },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     {"hexstring","prevtxs","privkeys","sighashtype"} }, /* uses wallet if enabled */
+    { "rawtransactions",    "testmempoolaccept",      &testmempoolaccept,      {"rawtx","allowhighfees"} },
 
     { "blockchain",         "gettxoutproof",          &gettxoutproof,          {"txids", "blockhash"} },
     { "blockchain",         "verifytxoutproof",       &verifytxoutproof,       {"proof"} },
