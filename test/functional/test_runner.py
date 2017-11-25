@@ -297,7 +297,7 @@ def run_tests(test_list, src_dir, build_dir, exeext, tmpdir, jobs=1, enable_cove
     else:
         coverage = None
 
-    if len(test_list) > 1 and jobs > 1:
+    if len(test_list):
         # Populate cache
         try:
             subprocess.check_output([tests_dir + 'create_cache.py'] + flags + ["--tmpdir=%s/cache" % tmpdir])
