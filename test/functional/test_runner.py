@@ -214,6 +214,10 @@ def main():
         # Don't run tests in parallel on windows by default
         # to avoid intermittent failures
         args.jobs = 1  # Overwrite for now
+        if args.exclude:
+         args.exclude += ',multiwallet,wallet-dump'  # no symbolic link, wrong device letter
+        else:
+         args.exclude = 'multiwallet,wallet-dump'
 
     if not (enable_wallet and enable_utils and enable_bitcoind):
         print("No functional tests to run. Wallet, utils, and bitcoind must all be enabled")

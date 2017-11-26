@@ -21,7 +21,7 @@ VB_UNKNOWN_BIT = 27 # Choose a bit unassigned to any deployment
 
 WARN_UNKNOWN_RULES_MINED = "Unknown block versions being mined! It's possible unknown rules are in effect"
 WARN_UNKNOWN_RULES_ACTIVE = "unknown new rules activated (versionbit {})".format(VB_UNKNOWN_BIT)
-VB_PATTERN = re.compile("'?^Warning.*versionbit")
+VB_PATTERN = re.compile("^'?Warning.*versionbit")
 
 class TestNode(NodeConnCB):
     def on_inv(self, conn, message):
