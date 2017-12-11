@@ -997,19 +997,23 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2) {
         throw std::runtime_error(
             // clang-format off
-            "testmempoolaccept \"rawtx\" ( allowhighfees )\n"
+            "testmempoolaccept [\"rawtxs\"] ( allowhighfees )\n"
             "\nReturns if raw transaction (serialized, hex-encoded) would be accepted by mempool.\n"
             "\nThis checks if the transaction violates our consesus or policy rules.\n"
             "\nAlso see sendrawtransaction call.\n"
             "\nArguments:\n"
-            "1. \"rawtx\"          (string, required) The hex string of the raw transaction)\n"
+            "1. [\"rawtxs\"]       (array, required) An array of hex strings of raw transactions.\n"
+            "                                        Length must be one for now.\n"
             "2. allowhighfees    (boolean, optional, default=false) Allow high fees\n"
             "\nResult:\n"
-            "{\n"
+            "[                   (array) The result of the mempool acceptance test for each raw transaction in the input array.\n"
+            "                            Length is exactly one for now.\n"
+            " {\n"
             "  \"txid\"           (string) The transaction hash in hex\n"
             "  \"allowed\"        (boolean) If the mempool allows this tx to be inserted\n"
             "  \"reject-reason\"  (string) rejection string (only present when 'allowed' is false)\n"
-            "}\n"
+            " }\n"
+            "]\n"
             "\nExamples:\n"
             "\nCreate a transaction\n"
             + HelpExampleCli("createrawtransaction", "\"[{\\\"txid\\\" : \\\"mytxid\\\",\\\"vout\\\":0}]\" \"{\\\"myaddress\\\":0.01}\"") +
@@ -1018,17 +1022,20 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
             "\nTest acceptance of the transaction (signed hex)\n"
             + HelpExampleCli("testmempoolaccept", "\"signedhex\"") +
             "\nAs a json rpc call\n"
-            + HelpExampleRpc("testmempoolaccept", "\"signedhex\"")
+            + HelpExampleRpc("testmempoolaccept", "[\"signedhex\"]")
             // clang-format on
             );
     }
 
     ObserveSafeMode();
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
+    RPCTypeCheck(request.params, {UniValue::VARR, UniValue::VBOOL});
+    if (request.params[0].get_array().size() != 1) {
+        throw JSONRPCError(RPC_TYPE_ERROR, "Array must contain exactly one raw transaction for now");
+    }
 
     CMutableTransaction mtx;
-    if (!DecodeHexTx(mtx, request.params[0].get_str())) {
+    if (!DecodeHexTx(mtx, request.params[0].get_array()[0].get_str())) {
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
     }
     CTransactionRef tx(MakeTransactionRef(std::move(mtx)));
@@ -1039,8 +1046,10 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
         max_raw_tx_fee = 0;
     }
 
-    UniValue result(UniValue::VOBJ);
-    result.push_back(Pair("txid", tx_hash.GetHex()));
+    UniValue result(UniValue::VARR);
+
+    UniValue result_0(UniValue::VOBJ);
+    result_0.pushKV("txid", tx_hash.GetHex());
 
     LOCK(cs_main);
 
@@ -1050,17 +1059,18 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
     bool res = AcceptToMemoryPool(mempool, state, std::move(tx), &missing_inputs,
         nullptr /* plTxnReplaced */, false /* bypass_limits */, max_raw_tx_fee, &test_accept_res);
     assert(!res);
-    result.push_back(Pair("allowed", test_accept_res));
+    result_0.pushKV("allowed", test_accept_res);
     if (!test_accept_res) {
         if (state.IsInvalid()) {
-            result.push_back(Pair("reject-reason", strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason())));
+            result_0.pushKV("reject-reason", strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason()));
         } else if (missing_inputs) {
-            result.push_back(Pair("reject-reason", "Missing inputs"));
+            result_0.pushKV("reject-reason", "Missing inputs");
         } else {
-            result.push_back(Pair("reject-reason", state.GetRejectReason()));
+            result_0.pushKV("reject-reason", state.GetRejectReason());
         }
     }
 
+    result.push_back(result_0);
     return result;
 }
 
@@ -1074,7 +1084,7 @@ static const CRPCCommand commands[] =
     { "rawtransactions",    "sendrawtransaction",     &sendrawtransaction,     {"hexstring","allowhighfees"} },
     { "rawtransactions",    "combinerawtransaction",  &combinerawtransaction,  {"txs"} },
     { "rawtransactions",    "signrawtransaction",     &signrawtransaction,     {"hexstring","prevtxs","privkeys","sighashtype"} }, /* uses wallet if enabled */
-    { "rawtransactions",    "testmempoolaccept",      &testmempoolaccept,      {"rawtx","allowhighfees"} },
+    { "rawtransactions",    "testmempoolaccept",      &testmempoolaccept,      {"rawtxs","allowhighfees"} },
 
     { "blockchain",         "gettxoutproof",          &gettxoutproof,          {"txids", "blockhash"} },
     { "blockchain",         "verifytxoutproof",       &verifytxoutproof,       {"proof"} },
