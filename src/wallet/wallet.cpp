@@ -4199,7 +4199,7 @@ CTxDestination CWallet::AddDestinationForKey(const CPubKey& key, OutputType type
             return witdest;
         }
     }
-    default: assert(false);
+    default: std::cout<<"false"<<std::endl; assert(false);
     }
 }
 
