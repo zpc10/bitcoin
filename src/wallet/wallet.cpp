@@ -42,8 +42,8 @@ CFeeRate payTxFee(DEFAULT_TRANSACTION_FEE);
 unsigned int nTxConfirmTarget = DEFAULT_TX_CONFIRM_TARGET;
 bool bSpendZeroConfChange = DEFAULT_SPEND_ZEROCONF_CHANGE;
 bool fWalletRbf = DEFAULT_WALLET_RBF;
-OutputType g_address_type = OutputType::NONE;
-OutputType g_change_type = OutputType::NONE;
+OutputType g_address_type = OUTPUT_TYPE_NONE;
+OutputType g_change_type = OUTPUT_TYPE_NONE;
 
 const char * DEFAULT_WALLET_DAT = "wallet.dat";
 const uint32_t BIP32_HARDENED_KEY_LIMIT = 0x80000000;
@@ -4146,13 +4146,13 @@ OutputType ParseOutputType(const std::string& type, OutputType default_type)
     if (type == "") {
         return default_type;
     } else if (type == OUTPUT_TYPE_STRING_LEGACY) {
-        return OutputType::LEGACY;
+        return OUTPUT_TYPE_LEGACY;
     } else if (type == OUTPUT_TYPE_STRING_P2SH) {
-        return OutputType::P2SH;
+        return OUTPUT_TYPE_P2SH;
     } else if (type == OUTPUT_TYPE_STRING_BECH32) {
-        return OutputType::BECH32;
+        return OUTPUT_TYPE_BECH32;
     } else {
-        return OutputType::NONE;
+        return OUTPUT_TYPE_NONE;
     }
 }
 
@@ -4160,9 +4160,9 @@ OutputType ParseOutputType(const std::string& type, OutputType default_type)
 const std::string& FormatOutputType(OutputType type)
 {
     switch (type) {
-    case OutputType::LEGACY: return OUTPUT_TYPE_STRING_LEGACY;
-    case OutputType::P2SH: return OUTPUT_TYPE_STRING_P2SH;
-    case OutputType::BECH32: return OUTPUT_TYPE_STRING_BECH32;
+    case OUTPUT_TYPE_LEGACY: return OUTPUT_TYPE_STRING_LEGACY;
+    case OUTPUT_TYPE_P2SH: return OUTPUT_TYPE_STRING_P2SH;
+    case OUTPUT_TYPE_BECH32: return OUTPUT_TYPE_STRING_BECH32;
     default: assert(false);
     }
 }
@@ -4182,9 +4182,9 @@ std::vector<CTxDestination> GetAllDestinationsForKey(const CPubKey& key)
 CTxDestination CWallet::AddDestinationForKey(const CPubKey& key, OutputType type)
 {
     switch (type) {
-    case OutputType::LEGACY: return key.GetID();
-    case OutputType::P2SH:
-    case OutputType::BECH32: {
+    case OUTPUT_TYPE_LEGACY: return key.GetID();
+    case OUTPUT_TYPE_P2SH:
+    case OUTPUT_TYPE_BECH32: {
         CTxDestination witdest = WitnessV0KeyHash(key.GetID());
         CScript witprog = GetScriptForDestination(witdest);
         // Check if the resulting program is solvable (i.e. doesn't use an uncompressed key)
@@ -4193,13 +4193,13 @@ CTxDestination CWallet::AddDestinationForKey(const CPubKey& key, OutputType type
         // so that downgrades to software without this are supported (as long as the wallet file is
         // up to date).
         AddCScript(witprog);
-        if (type == OutputType::P2SH) {
+        if (type == OUTPUT_TYPE_P2SH) {
             return CScriptID(witprog);
         } else {
             return witdest;
         }
     }
-    default: std::cout<<"false"<<std::endl; assert(false);
+    default: assert(false);
     }
 }
 
@@ -4207,10 +4207,10 @@ CTxDestination CWallet::AddDestinationForScript(const CScript& script, OutputTyp
 {
     // Note that scripts over 520 bytes are not yet supported.
     switch (type) {
-    case OutputType::LEGACY:
+    case OUTPUT_TYPE_LEGACY:
         return CScriptID(script);
-    case OutputType::P2SH:
-    case OutputType::BECH32: {
+    case OUTPUT_TYPE_P2SH:
+    case OUTPUT_TYPE_BECH32: {
         WitnessV0ScriptHash hash;
         CSHA256().Write(script.data(), script.size()).Finalize(hash.begin());
         CTxDestination witdest = hash;
@@ -4219,7 +4219,7 @@ CTxDestination CWallet::AddDestinationForScript(const CScript& script, OutputTyp
         if (!IsSolvable(*this, witprog)) return CScriptID(script);
         // Add the redeemscript, so that P2WSH and P2SH-P2WSH outputs are recognized as ours.
         AddCScript(witprog);
-        if (type == OutputType::BECH32) {
+        if (type == OUTPUT_TYPE_BECH32) {
             return witdest;
         } else {
             return CScriptID(witprog);
