@@ -999,8 +999,8 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
             // clang-format off
             "testmempoolaccept [\"rawtxs\"] ( allowhighfees )\n"
             "\nReturns if raw transaction (serialized, hex-encoded) would be accepted by mempool.\n"
-            "\nThis checks if the transaction violates our consesus or policy rules.\n"
-            "\nAlso see sendrawtransaction call.\n"
+            "\nThis checks if the transaction violates the consensus or policy rules.\n"
+            "\nSee sendrawtransaction call.\n"
             "\nArguments:\n"
             "1. [\"rawtxs\"]       (array, required) An array of hex strings of raw transactions.\n"
             "                                        Length must be one for now.\n"
@@ -1011,7 +1011,7 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
             " {\n"
             "  \"txid\"           (string) The transaction hash in hex\n"
             "  \"allowed\"        (boolean) If the mempool allows this tx to be inserted\n"
-            "  \"reject-reason\"  (string) rejection string (only present when 'allowed' is false)\n"
+            "  \"reject-reason\"  (string) Rejection string (only present when 'allowed' is false)\n"
             " }\n"
             "]\n"
             "\nExamples:\n"
@@ -1031,7 +1031,7 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
 
     RPCTypeCheck(request.params, {UniValue::VARR, UniValue::VBOOL});
     if (request.params[0].get_array().size() != 1) {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Array must contain exactly one raw transaction for now");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Array must contain exactly one raw transaction for now");
     }
 
     CMutableTransaction mtx;
@@ -1047,30 +1047,30 @@ UniValue testmempoolaccept(const JSONRPCRequest& request)
     }
 
     UniValue result(UniValue::VARR);
-
     UniValue result_0(UniValue::VOBJ);
     result_0.pushKV("txid", tx_hash.GetHex());
-
-    LOCK(cs_main);
 
     CValidationState state;
     bool missing_inputs;
     bool test_accept_res;
-    bool res = AcceptToMemoryPool(mempool, state, std::move(tx), &missing_inputs,
-        nullptr /* plTxnReplaced */, false /* bypass_limits */, max_raw_tx_fee, &test_accept_res);
-    assert(!res);
+    {
+        LOCK(cs_main);
+        bool res = AcceptToMemoryPool(mempool, state, std::move(tx), &missing_inputs,
+            nullptr /* plTxnReplaced */, false /* bypass_limits */, max_raw_tx_fee, &test_accept_res);
+        assert(!res);
+    }
     result_0.pushKV("allowed", test_accept_res);
     if (!test_accept_res) {
         if (state.IsInvalid()) {
             result_0.pushKV("reject-reason", strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason()));
         } else if (missing_inputs) {
-            result_0.pushKV("reject-reason", "Missing inputs");
+            result_0.pushKV("reject-reason", "missing-inputs");
         } else {
             result_0.pushKV("reject-reason", state.GetRejectReason());
         }
     }
 
-    result.push_back(result_0);
+    result.push_back(std::move(result_0));
     return result;
 }
 

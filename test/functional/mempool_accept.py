@@ -49,7 +49,7 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
 
         self.log.info('Should not accept garbage')
         assert_raises_rpc_error(-3, 'Expected type array, got string', lambda: node.testmempoolaccept(rawtxs='ff00baar'))
-        assert_raises_rpc_error(-3, 'Array must contain exactly one raw transaction for now', lambda: node.testmempoolaccept(rawtxs=['ff00baar', 'ff22']))
+        assert_raises_rpc_error(-8, 'Array must contain exactly one raw transaction for now', lambda: node.testmempoolaccept(rawtxs=['ff00baar', 'ff22']))
         assert_raises_rpc_error(-22, 'TX decode failed', lambda: node.testmempoolaccept(rawtxs=['ff00baar']))
 
         self.log.info('A transaction already in the blockchain')
@@ -117,7 +117,7 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
         tx.vin[0].prevout = COutPoint(hash=0x1111111111111111111111111111111111111111111111111111111111111111, n=14)
         # skip re-signing the tx
         self.check_mempool_result(
-            result_expected=[{'txid': tx.rehash(), 'allowed': False, 'reject-reason': 'Missing inputs'}],
+            result_expected=[{'txid': tx.rehash(), 'allowed': False, 'reject-reason': 'missing-inputs'}],
             rawtxs=[bytes_to_hex_str(tx.serialize())],
         )
 
@@ -139,11 +139,11 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
         self.mempool_size = 0
         # Now see if we can add the coins back to the utxo set by sending the exact txs again
         self.check_mempool_result(
-            result_expected=[{'txid': txid_0, 'allowed': False, 'reject-reason': 'Missing inputs'}],
+            result_expected=[{'txid': txid_0, 'allowed': False, 'reject-reason': 'missing-inputs'}],
             rawtxs=[raw_tx_0],
         )
         self.check_mempool_result(
-            result_expected=[{'txid': txid_1, 'allowed': False, 'reject-reason': 'Missing inputs'}],
+            result_expected=[{'txid': txid_1, 'allowed': False, 'reject-reason': 'missing-inputs'}],
             rawtxs=[raw_tx_1],
         )
 
