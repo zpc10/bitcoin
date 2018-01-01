@@ -580,6 +580,7 @@ const fs::path &GetDataDir(bool fNetSpecific)
         }
     } else {
         path = GetDefaultDataDir();
+        assert(false);
     }
     if (fNetSpecific)
         path /= BaseParams().DataDir();
