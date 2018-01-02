@@ -42,9 +42,9 @@ class TestNode():
     To make things easier for the test writer, any unrecognised messages will
     be dispatched to the RPC connection."""
 
-    def __init__(self, i, dirname, extra_args, rpchost, timewait, binary, stderr, mocktime, coverage_dir, use_cli=False):
+    def __init__(self, i, datadir, extra_args, rpchost, timewait, binary, stderr, mocktime, coverage_dir, use_cli=False):
         self.index = i
-        self.datadir = os.path.join(dirname, "node" + str(i))
+        self.datadir = datadir
         self.rpchost = rpchost
         if timewait:
             self.rpc_timeout = timewait

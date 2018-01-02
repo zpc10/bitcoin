@@ -24,6 +24,7 @@ from .util import (
     check_json_precision,
     connect_nodes_bi,
     disconnect_nodes,
+    get_datadir_path,
     initialize_datadir,
     log_filename,
     p2p_port,
@@ -218,7 +219,7 @@ class BitcoinTestFramework():
         assert_equal(len(extra_args), num_nodes)
         assert_equal(len(binary), num_nodes)
         for i in range(num_nodes):
-            self.nodes.append(TestNode(i, self.options.tmpdir, extra_args[i], rpchost, timewait=timewait, binary=binary[i], stderr=None, mocktime=self.mocktime, coverage_dir=self.options.coveragedir, use_cli=self.options.usecli))
+            self.nodes.append(TestNode(i, get_datadir_path(self.options.tmpdir, i), extra_args[i], rpchost, timewait=timewait, binary=binary[i], stderr=None, mocktime=self.mocktime, coverage_dir=self.options.coveragedir, use_cli=self.options.usecli))
 
     def start_node(self, i, extra_args=None, stderr=None):
         """Start a bitcoind"""
@@ -372,7 +373,7 @@ class BitcoinTestFramework():
         assert self.num_nodes <= MAX_NODES
         create_cache = False
         for i in range(MAX_NODES):
-            if not os.path.isdir(os.path.join(self.options.cachedir, 'node' + str(i))):
+            if not os.path.isdir(get_datadir_path(self.options.cachedir, i)):
                 create_cache = True
                 break
 
@@ -381,8 +382,8 @@ class BitcoinTestFramework():
 
             # find and delete old cache directories if any exist
             for i in range(MAX_NODES):
-                if os.path.isdir(os.path.join(self.options.cachedir, "node" + str(i))):
-                    shutil.rmtree(os.path.join(self.options.cachedir, "node" + str(i)))
+                if os.path.isdir(get_datadir_path(self.options.cachedir, i)):
+                    shutil.rmtree(get_datadir_path(self.options.cachedir, i))
 
             # Create cache directories, run bitcoinds:
             for i in range(MAX_NODES):
@@ -390,7 +391,7 @@ class BitcoinTestFramework():
                 args = [os.getenv("BITCOIND", "bitcoind"), "-server", "-keypool=1", "-datadir=" + datadir, "-discover=0"]
                 if i > 0:
                     args.append("-connect=127.0.0.1:" + str(p2p_port(0)))
-                self.nodes.append(TestNode(i, self.options.cachedir, extra_args=[], rpchost=None, timewait=None, binary=None, stderr=None, mocktime=self.mocktime, coverage_dir=None))
+                self.nodes.append(TestNode(i, get_datadir_path(self.options.cachedir, i), extra_args=[], rpchost=None, timewait=None, binary=None, stderr=None, mocktime=self.mocktime, coverage_dir=None))
                 self.nodes[i].args = args
                 self.start_node(i)
 
@@ -427,8 +428,8 @@ class BitcoinTestFramework():
                 os.remove(log_filename(self.options.cachedir, i, "fee_estimates.dat"))
 
         for i in range(self.num_nodes):
-            from_dir = os.path.join(self.options.cachedir, "node" + str(i))
-            to_dir = os.path.join(self.options.tmpdir, "node" + str(i))
+            from_dir = get_datadir_path(self.options.cachedir, i)
+            to_dir = get_datadir_path(self.options.tmpdir, i)
             shutil.copytree(from_dir, to_dir)
             initialize_datadir(self.options.tmpdir, i)  # Overwrite port/rpcport in bitcoin.conf
 

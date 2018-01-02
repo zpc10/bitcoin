@@ -284,7 +284,7 @@ def rpc_url(datadir, i, rpchost=None):
 ################
 
 def initialize_datadir(dirname, n):
-    datadir = os.path.join(dirname, "node" + str(n))
+    datadir = get_datadir_path(dirname, n)
     if not os.path.isdir(datadir):
         os.makedirs(datadir)
     with open(os.path.join(datadir, "bitcoin.conf"), 'w', encoding='utf8') as f:
@@ -320,7 +320,7 @@ def get_auth_cookie(datadir):
     return user, password
 
 def log_filename(dirname, n_node, logname):
-    return os.path.join(dirname, "node" + str(n_node), "regtest", logname)
+    return os.path.join(get_datadir_path(dirname, n_node), "regtest", logname)
 
 def get_bip9_status(node, key):
     info = node.getblockchaininfo()
