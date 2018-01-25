@@ -4445,6 +4445,23 @@ int main(int argc, char **argv) {
         fclose(frand);
     }
     secp256k1_rand_seed(seed16);
+    
+    seed16[0] = 0x13;
+    seed16[1] = 0x4f;
+    seed16[2] = 0x74;
+    seed16[3] = 0xe8;
+    seed16[4] = 0x27;
+    seed16[5] = 0xfc;
+    seed16[6] = 0x17;
+    seed16[7] = 0x8e;
+    seed16[8] = 0xad;
+    seed16[9] = 0xad;
+   seed16[10] = 0xf1;
+   seed16[11] = 0xa2;
+   seed16[12] = 0x6f;
+   seed16[13] = 0x9e;
+   seed16[14] = 0xd0;
+   seed16[15] = 0x05;
 
     printf("test count = %i\n", count);
     printf("random seed = %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n", seed16[0], seed16[1], seed16[2], seed16[3], seed16[4], seed16[5], seed16[6], seed16[7], seed16[8], seed16[9], seed16[10], seed16[11], seed16[12], seed16[13], seed16[14], seed16[15]);
