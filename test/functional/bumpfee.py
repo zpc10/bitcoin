@@ -236,8 +236,8 @@ def test_unconfirmed_not_spendable(rbf_node, rbf_node_address):
     # mempool. this makes it possible to check whether the rbf tx outputs are
     # spendable before the rbf tx is confirmed.
     block = submit_block_with_tx(rbf_node, rbftx)
-    rbf_node.abandontransaction(bumpid)
     rbf_node.invalidateblock(block.hash)
+    rbf_node.abandontransaction(bumpid)
     assert bumpid not in rbf_node.getrawmempool()
     assert rbfid in rbf_node.getrawmempool()
 
